@@ -3,97 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <title>Cards Shuffle</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
 <style>
-html, body {
-    margin: 0;
-    padding: 0;
-    height: 100dvh;
-    overflow: hidden;
-    touch-action: manipulation;
-}
-
-/* ---------- Main layout ---------- */
-body {
-    display: flex;
-    flex-direction: column;
-    background: url("background.png") center / cover no-repeat;
-    position: relative; /* for config button positioning */
-}
-
-/* ---------- Timer area ---------- */
-#timerContainer {
-    height: 48px;                 /* fixed height */
-    background: white;
-    color: black;
-    text-align: center;
-    padding: 6px 8px;
-    font-size: 14px;
-    box-sizing: border-box;
-    white-space: pre-line;
-    flex-shrink: 0;               /* never shrink */
-}
-
-/* ---------- Image / card area ---------- */
-#imageContainer {
-    flex: 1;                       /* takes remaining space */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-sizing: border-box;
-    border: 2px solid black;       /* separation line */
-    overflow: hidden;              /* image stays inside container */
-    position: relative;            /* allow clicks on img */
-    z-index: 1;
-}
-
-#imageContainer img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;           /* always fully visible */
-    user-select: none;             /* prevent text selection on mobile */
-    pointer-events: none;          /* allow click to pass through image */
-}
-
-/* ---------- Config button ---------- */
-#configBtn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    padding: 8px 12px;
-    background: white;
-    color: black;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    z-index: 10;
-}
-
-#configMenu {
-    position: absolute;
-    top: 46px;
-    right: 8px;
-    background: #222;
-    color: white;
-    border-radius: 8px;
-    padding: 10px;
-    display: none;
-    z-index: 10;
-}
-
-#configMenu button {
-    width: 100%;
-    margin: 4px 0;
-    padding: 6px;
-}
+html, body {margin:0; padding:0; height:100dvh; overflow:hidden; touch-action: manipulation;}
+body {display:flex; flex-direction:column; background: url("background.png") center / cover no-repeat; position: relative;}
+#timerContainer {height:48px; background:white; color:black; text-align:center; padding:6px 8px; font-size:14px; flex-shrink:0;}
+#imageContainer {flex:1; display:flex; justify-content:center; align-items:center; border:2px solid black; overflow:hidden; position: relative;}
+#imageContainer img {max-width:100%; max-height:100%; object-fit:contain; pointer-events:none;}
+#configBtn, #pointsBtn {position:absolute; top:8px; padding:8px 12px; background:white; color:black; border:none; border-radius:6px; font-size:14px; z-index:10;}
+#configBtn {right:8px;}
+#pointsBtn {right:110px;}
+.panel {position:absolute; top:46px; right:8px; background:#222; color:white; border-radius:8px; padding:10px; display:none; z-index:10; max-height:90dvh; overflow-y:auto;}
+.panel button {width:100%; margin:4px 0; padding:6px;}
+.panel input {margin-right:4px;}
 </style>
 </head>
-
 <body>
 
 <div id="timerContainer"></div>
@@ -103,8 +27,10 @@ body {
 </div>
 
 <button id="configBtn">Config</button>
+<button id="pointsBtn">Points</button>
 
-<div id="configMenu">
+<!-- Config Panel -->
+<div id="configPanel" class="panel">
     <button onclick="restartAll()">Restart</button>
     <button onclick="copyLog()">Copy log</button>
     <button onclick="copyShuffled()">Copy shuffled</button>
@@ -114,130 +40,113 @@ body {
     <button onclick="showStatic('punts.png')">Punts</button>
 </div>
 
+<!-- Points Panel -->
+<div id="pointsPanel" class="panel">
+    <strong>Points System</strong>
+    <div id="pointsDisplay">Current Points: 0</div>
+    <button onclick="addPoints('Inici del joc', 120)">Inici del joc +120</button>
+    <button onclick="addPoints('Nou torn', 25)">Nou torn +25</button>
+    <button onclick="addPoints('Nova corona', 25)">Nova corona +25</button>
+    <button onclick="addPoints('1 prova', 50)">1 prova +50</button>
+    <button onclick="addPoints('1 prova x2', 80)">1 prova x2 +80</button>
+    <hr>
+    <strong>Transport Deduction</strong>
+    <div>METRO (L) <input type="number" id="metroMins" placeholder="mins" style="width:60px;">
+        <button onclick="spendTransport('METRO', 4, 'metroMins')">Apply</button></div>
+    <div>RENFE (R) <input type="number" id="renfeMins" placeholder="mins" style="width:60px;">
+        <button onclick="spendTransport('RENFE', 3, 'renfeMins')">Apply</button></div>
+    <div>FGC (S/R) <input type="number" id="fgcMins" placeholder="mins" style="width:60px;">
+        <button onclick="spendTransport('FGC', 3, 'fgcMins')">Apply</button></div>
+    <div>TRAM <input type="number" id="tramMins" placeholder="mins" style="width:60px;">
+        <button onclick="spendTransport('TRAM', 2, 'tramMins')">Apply</button></div>
+    <div>BUS URBÀ <input type="number" id="busUrbMins" placeholder="mins" style="width:60px;">
+        <button onclick="spendTransport('BUS URBÀ', 1, 'busUrbMins')">Apply</button></div>
+    <div>BUS INTERURBÀ <input type="number" id="busInterMins" placeholder="mins" style="width:60px;">
+        <button onclick="spendTransport('BUS INTERURBÀ', 2, 'busInterMins')">Apply</button></div>
+    <div>FUNICULAR (full journey) <input type="number" id="funicular" placeholder="journeys" style="width:60px;">
+        <button onclick="spendTransport('FUNICULAR', 5, 'funicular')">Apply</button></div>
+    <hr>
+    <strong>Manual Adjust</strong>
+    <input type="number" id="manualPoints" placeholder="Points" style="width:80px;">
+    <button onclick="manualAdjust()">Apply</button>
+</div>
+
 <script>
-/* ---------- Constants ---------- */
+// ---------- Initialization ----------
+let shuffledCards = JSON.parse(localStorage.getItem('shuffledCards')) || [];
+let log = JSON.parse(localStorage.getItem('log')) || [];
+let totalPoints = parseInt(localStorage.getItem('totalPoints')) || 0;
+
+// ---------- Elements ----------
+const img = document.getElementById('card');
+const timerDiv = document.getElementById('timerContainer');
+
+// ---------- Shuffle ----------
 const TOTAL_CARDS = 28;
 const LIMIT = Math.ceil(TOTAL_CARDS * 0.75);
-const SHUFFLED_KEY = "shuffled_cards";
-const LOG_KEY = "cards_shuffle_log";
+
+function showRandomCard(){
+    if(shuffledCards.length >= LIMIT) shuffledCards = [];
+    const available = [];
+    for(let i=1;i<=TOTAL_CARDS;i++) if(!shuffledCards.includes(i)) available.push(i);
+    const card = available[Math.floor(Math.random()*available.length)];
+    shuffledCards.push(card);
+    img.src = `Cards/${card}.png`;
+    localStorage.setItem('shuffledCards', JSON.stringify(shuffledCards));
+    logAction({type:"card", value:card, time:new Date().toLocaleString()});
+}
+
+// ---------- Static Images ----------
+function showStatic(file){img.src=file;}
+
+// ---------- Timer ----------
 const EVENTS = [
-    { name: "Quedada", time: "09:30" },
-    { name: "Inici del joc", time: "10:00" },
-    { name: "Inici Parada Dinar", time: "14:00" },
-    { name: "Final Parada Dinar", time: "15:00" },
-    { name: "Final del joc", time: "19:00" }
+    {name:"Quedada", time:"09:30"},
+    {name:"Inici del joc", time:"10:00"},
+    {name:"Inici Parada Dinar", time:"14:00"},
+    {name:"Final Parada Dinar", time:"15:00"},
+    {name:"Final del joc", time:"19:00"}
 ];
 
-/* ---------- Elements ---------- */
-const img = document.getElementById("card");
-const menu = document.getElementById("configMenu");
-const timerDiv = document.getElementById("timerContainer");
-
-/* ---------- Storage helpers ---------- */
-function loadArray(key) { return JSON.parse(localStorage.getItem(key)) || []; }
-function saveArray(key, arr) { localStorage.setItem(key, JSON.stringify(arr)); }
-
-/* ---------- Shuffle logic ---------- */
-function showRandomCard() {
-    let shuffled = loadArray(SHUFFLED_KEY);
-    if (shuffled.length >= LIMIT) shuffled = [];
-
-    const available = [];
-    for (let i = 1; i <= TOTAL_CARDS; i++) {
-        if (!shuffled.includes(i)) available.push(i);
-    }
-
-    const card = available[Math.floor(Math.random() * available.length)];
-    shuffled.push(card);
-
-    img.src = `Cards/${card}.png`;
-    saveArray(SHUFFLED_KEY, shuffled);
-    logCard(card);
+function todayAt(hhmm){ const [h,m]=hhmm.split(":").map(Number); const d=new Date(); d.setHours(h,m,0,0); return d;}
+function formatDuration(ms){ const s=Math.max(0,Math.floor(ms/1000)); const h=Math.floor(s/3600); const m=Math.floor((s%3600)/60); const sec=s%60; return `${h}h ${m}m ${sec}s`;}
+function updateTimer(){
+    const now=new Date();
+    const quedada=todayAt("09:30");
+    const finalGame=todayAt("19:00");
+    if(now>finalGame && now<new Date(quedada.getTime()-2*3600*1000)){timerDiv.textContent=""; return;}
+    let next = EVENTS.map(e=>({name:e.name,date:todayAt(e.time)})).find(e=>e.date>now);
+    if(!next) next={name:"Quedada", date:new Date(quedada.getTime()+24*3600*1000)};
+    timerDiv.textContent=`${next.name}: ${formatDuration(next.date-now)}`;
 }
 
-function logCard(card) {
-    const log = loadArray(LOG_KEY);
-    log.push({ card, time: new Date().toLocaleString() });
-    saveArray(LOG_KEY, log);
-}
+// ---------- Points ----------
+function updatePointsDisplay(){const pd=document.getElementById('pointsDisplay'); if(pd) pd.textContent='Current Points: '+totalPoints;}
+function logAction(action){ log.push(action); localStorage.setItem('log', JSON.stringify(log)); }
+function addPoints(name,value){ totalPoints+=value; logAction({type:"points", action:name, points:value, time:new Date().toLocaleString()}); localStorage.setItem('totalPoints', totalPoints); updatePointsDisplay(); }
+function spendTransport(name,ppu,inputId){ const val=parseInt(document.getElementById(inputId).value)||0; const deduction=val*ppu; totalPoints-=deduction; logAction({type:"points", action:name+' deduction', points:-deduction, units:val, time:new Date().toLocaleString()}); localStorage.setItem('totalPoints', totalPoints); updatePointsDisplay(); document.getElementById(inputId).value='';}
+function manualAdjust(){ const val=parseInt(document.getElementById('manualPoints').value); if(isNaN(val)) return; totalPoints+=val; logAction({type:"points", action:'Manual adjust', points:val, time:new Date().toLocaleString()}); localStorage.setItem('totalPoints', totalPoints); updatePointsDisplay(); document.getElementById('manualPoints').value='';}
 
-/* ---------- Static images ---------- */
-function showStatic(file) { img.src = file; }
+// ---------- UI ----------
+document.getElementById('imageContainer').addEventListener('click', ()=>{ showRandomCard(); hidePanels(); });
+document.getElementById('configBtn').onclick=e=>{ e.stopPropagation(); togglePanel('configPanel'); };
+document.getElementById('pointsBtn').onclick=e=>{ e.stopPropagation(); togglePanel('pointsPanel'); };
+function togglePanel(id){ document.getElementById(id).style.display = document.getElementById(id).style.display==='block'?'none':'block'; }
+function hidePanels(){ document.getElementById('configPanel').style.display='none'; document.getElementById('pointsPanel').style.display='none'; }
 
-/* ---------- Config actions ---------- */
-function restartAll() {
-    localStorage.removeItem(SHUFFLED_KEY);
-    localStorage.removeItem(LOG_KEY);
-    img.src = "logo.png";
-    alert("Restarted");
-}
+// ---------- Copy / Import ----------
+async function copyLog(){await navigator.clipboard.writeText(JSON.stringify(log,null,2)); alert("Log copied");}
+async function copyShuffled(){await navigator.clipboard.writeText(JSON.stringify(shuffledCards)); alert("Shuffled copied");}
+async function importShuffled(){ try{ const data=JSON.parse(await navigator.clipboard.readText()); if(!Array.isArray(data)) throw 0; shuffledCards=data; localStorage.setItem('shuffledCards', JSON.stringify(shuffledCards)); alert("Shuffled imported"); } catch{ alert("Invalid clipboard data"); } }
 
-async function copyLog() { await navigator.clipboard.writeText(JSON.stringify(loadArray(LOG_KEY), null, 2)); alert("Log copied"); }
-async function copyShuffled() { await navigator.clipboard.writeText(JSON.stringify(loadArray(SHUFFLED_KEY))); alert("Shuffled copied"); }
-async function importShuffled() {
-    try {
-        const data = JSON.parse(await navigator.clipboard.readText());
-        if (!Array.isArray(data)) throw 0;
-        saveArray(SHUFFLED_KEY, data);
-        alert("Shuffled imported");
-    } catch { alert("Invalid clipboard data"); }
-}
+// ---------- Restart ----------
+function restartAll(){ shuffledCards=[]; log=[]; totalPoints=0; localStorage.removeItem('shuffledCards'); localStorage.removeItem('log'); localStorage.removeItem('totalPoints'); img.src='logo.png'; updatePointsDisplay(); alert('Restarted'); }
 
-/* ---------- Time utilities ---------- */
-function todayAt(hhmm) {
-    const [h, m] = hhmm.split(":").map(Number);
-    const d = new Date();
-    d.setHours(h, m, 0, 0);
-    return d;
-}
-
-function formatDuration(ms) {
-    const s = Math.max(0, Math.floor(ms / 1000));
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-    return `${h}h ${m}m ${sec}s`;
-}
-
-/* ---------- Timer logic ---------- */
-function updateTimer() {
-    const now = new Date();
-    const quedada = todayAt("09:30");
-    const finalGame = todayAt("19:00");
-
-    if (now > finalGame && now < new Date(quedada.getTime() - 2 * 3600 * 1000)) {
-        timerDiv.textContent = "";
-        return;
-    }
-
-    const times = EVENTS.map(e => ({ name: e.name, date: todayAt(e.time) }));
-    let next = times.find(e => e.date > now);
-    if (!next) next = { name: "Quedada", date: new Date(quedada.getTime() + 24*3600*1000) };
-
-    timerDiv.textContent = `${next.name}: ${formatDuration(next.date - now)}`;
-}
-
-/* ---------- UI events ---------- */
-document.getElementById("imageContainer").addEventListener("click", () => {
-    showRandomCard();
-    menu.style.display = "none";
-});
-
-document.getElementById("configBtn").onclick = e => {
-    e.stopPropagation();
-    menu.style.display = menu.style.display === "block" ? "none" : "block";
-};
-
-setInterval(updateTimer, 1000);
+// ---------- Init ----------
+updatePointsDisplay();
 updateTimer();
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
-    .then(() => console.log('Service Worker Registered'))
-    .catch(err => console.log('SW Registration failed:', err));
-}
+setInterval(updateTimer,1000);
 
 </script>
-
 </body>
 </html>
